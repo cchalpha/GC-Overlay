@@ -13,7 +13,7 @@ SLOT="0"
 # double check none of the deps are still masked !
 KEYWORDS="alpha amd64 ia64 ppc ppc64 sparc x86"
 
-IUSE="X"
+IUSE="+X"
 
 S=${WORKDIR}
 

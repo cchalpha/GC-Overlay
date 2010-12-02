@@ -19,8 +19,11 @@ S=${WORKDIR}
 
 RDEPEND="
 	app-admin/sudo
-	app-editors/vim
+	app-editors/vim[bash-completion]
 	media-sound/alsa-utils
+	net-fs/autofs
+	net-fs/nfs-utils
+	sys-apps/hdparm
 	sys-block/compcache-tools
 	sys-power/hibernate-script"
 DEPEND=""
