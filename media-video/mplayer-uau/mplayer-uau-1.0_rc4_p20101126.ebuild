@@ -40,7 +40,7 @@ if [[ ${PV} == *9999* ]]; then
 	EGIT_PROJECT="${PN}-build"
 	RELEASE_URI=""
 else
-	RELEASE_URI="mirror://gentoo/${P}.tar.xz"
+	RELEASE_URI="http://rion-overlay.googlecode.com/files/${P}.tar.xz"
 fi
 SRC_URI="${RELEASE_URI}
 	!truetype? ( ${FONT_URI} )
