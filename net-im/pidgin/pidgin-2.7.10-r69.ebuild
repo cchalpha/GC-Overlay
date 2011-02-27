@@ -142,7 +142,6 @@ src_prepare() {
 		cd qq
 		svn up -r 26 Makefile.am Makefile.in
 		#apply patchs
-		epatch "${FILESDIR}/g_slist_free_full.patch"
 	fi
 }
 
