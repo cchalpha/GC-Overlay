@@ -13,7 +13,7 @@ SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="alpha amd64 ~arm hppa ia64 ppc ppc64 sparc x86"
+KEYWORDS="~*"
 IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile"
 IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl +startup-notification"
 IUSE+=" ncurses groupwise prediction python +xscreensaver zephyr zeroconf" # mono"
@@ -128,10 +128,21 @@ pkg_setup() {
 # protocol
 src_prepare() {
 	if use qq; then
-		rm -rf libpurple/protocols/qq
+		cd libpurple/protocols
+		rm -rf qq
+		local co_flag=""
+		if [ ! "${PR}" == "r9999" ]; then
+			co_flag="-${PR}"
+		fi
 		einfo "Checking out qq 2010 protocol src from http://libqq-pidgin.googlecode.com at reversion (${PR})"
 		einfo "Please report qq related bugs to http://libqq-pidgin.googlecode.com instead of pidgin." 
-		svn co http://libqq-pidgin.googlecode.com/svn/trunk -${PR} libpurple/protocols/qq
+		svn co http://libqq-pidgin.googlecode.com/svn/trunk ${co_flag} qq
+		#The libqq-pidgin project is going to build it seperate from pidgin,
+		#We revert to original Makefiles
+		cd qq
+		svn up -r 26 Makefile.am Makefile.in
+		#apply patchs
+		epatch "${FILESDIR}/g_slist_free_full.patch"
 	fi
 }
 
