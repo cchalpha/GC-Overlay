@@ -18,10 +18,11 @@ IUSE=""
 S=${WORKDIR}
 
 DEPEND="
-	app-i18n/ibus-sunpinyin
+	app-i18n/xsunpinyin
 	media-gfx/feh
 	x11-libs/gksu
-	x11-misc/pypanel
+	x11-misc/tint2
+	gnome-base/librsvg
 	x11-themes/hicolor-icon-theme
 	x11-themes/vanilla-dmz-xcursors
 	x11-wm/openbox
