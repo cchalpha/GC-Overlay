@@ -17,6 +17,8 @@ KEYWORDS="~*"
 IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile"
 IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl +startup-notification"
 IUSE+=" ncurses groupwise prediction python +xscreensaver zephyr zeroconf" # mono"
+#Add the default new USE "qq2010" to use lib-qq code
+IUSE+=" +qq2010"
 
 # dbus requires python to generate C code for dbus bindings (thus DEPEND only).
 # finch uses libgnt that links with libpython - {R,}DEPEND. But still there is
@@ -70,7 +72,7 @@ DEPEND="$RDEPEND
 	dev-lang/perl
 	dev-perl/XML-Parser
 	dev-util/pkgconfig
-	dev-vcs/subversion
+	qq2010? ( dev-vcs/subversion )
 	gtk? ( x11-proto/scrnsaverproto
 		${NLS_DEPEND} )
 	dbus? ( <dev-lang/python-3 )
@@ -81,6 +83,9 @@ DOCS="AUTHORS HACKING NEWS README ChangeLog"
 
 # Enable Default protocols
 DYNAMIC_PRPLS="irc,jabber,oscar,yahoo,simple,msn,myspace"
+
+# Define QQ2010 protocol src version
+QQ2010_VERSION="0.65.1"
 
 # List of plugins
 #   app-accessibility/pidgin-festival
@@ -118,6 +123,9 @@ pkg_setup() {
 	if use dbus && ! use python; then
 		elog "dbus is enabled, no way to disable linkage with python => python is enabled"
 	fi
+	if use qq2010 && ! use qq; then
+		elog "enable qq2010 => qq is enabled!"
+	fi
 	if use dbus || { use ncurses && use python; }; then
 		python_set_active_version 2
 		python_pkg_setup
@@ -125,24 +133,19 @@ pkg_setup() {
 }
 
 # Add src_prepare to replace the qq protocol source code with the qq 2010
-# protocol
+# protocol src
 src_prepare() {
-	if use qq; then
+	if use qq2010; then
 		cd libpurple/protocols
 		rm -rf qq
-		local co_flag=""
-		if [ ! "${PR}" == "r9999" ]; then
-			co_flag="-${PR}"
+		if [ "${PR}" == "r9999" ]; then
+			einfo "Checking out qq 2010 protocol src from http://libqq-pidgin.googlecode.com using vanilla branch HEAD."
+			svn co http://libqq-pidgin.googlecode.com/svn/branches/vanilla qq
+		else
+			einfo "Checking out qq 2010 protocol src from http://libqq-pidgin.googlecode.com using vanilla tag ${QQ2010_VERSION}."
+			svn co http://libqq-pidgin.googlecode.com/svn/tags/vanilla_${QQ2010_VERSION} qq
 		fi
-		einfo "Checking out qq 2010 protocol src from http://libqq-pidgin.googlecode.com at reversion (${PR})"
 		einfo "Please report qq related bugs to http://libqq-pidgin.googlecode.com instead of pidgin." 
-		svn co http://libqq-pidgin.googlecode.com/svn/trunk ${co_flag} qq
-		#The libqq-pidgin project is going to build it seperate from pidgin,
-		#We revert to original Makefiles
-		cd qq
-		svn up -r 26 Makefile.am Makefile.in
-		#apply patchs
-		#epatch "${FILESDIR}/g_slist_free_full.patch"
 	fi
 }
 
@@ -160,7 +163,7 @@ src_configure() {
 	fi
 
 	use silc && DYNAMIC_PRPLS+=",silc"
-	use qq && DYNAMIC_PRPLS+=",qq"
+	(use qq || use qq2010) && DYNAMIC_PRPLS+=",qq"
 	use meanwhile && DYNAMIC_PRPLS+=",sametime"
 	use zeroconf && DYNAMIC_PRPLS+=",bonjour"
 	use groupwise && DYNAMIC_PRPLS+=",novell"
