@@ -1,6 +1,6 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.7.10.ebuild,v 1.7 2011/02/14 20:41:50 jer Exp $
+# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.7.11.ebuild,v 1.1 2011/03/12 15:54:44 pva Exp $
 
 EAPI=2
 
@@ -15,8 +15,8 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~*"
 IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile"
-IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl +startup-notification"
-IUSE+=" ncurses groupwise prediction python +xscreensaver zephyr zeroconf" # mono"
+IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl ncurses"
+IUSE+=" groupwise prediction python +xscreensaver zephyr zeroconf" # mono"
 #Add the default new USE "qq2010" to use lib-qq code
 IUSE+=" +qq2010"
 
@@ -36,7 +36,6 @@ RDEPEND="
 		>=x11-libs/gtk+-2.10:2
 		x11-libs/libSM
 		xscreensaver? ( x11-libs/libXScrnSaver )
-		startup-notification? ( >=x11-libs/startup-notification-0.5 )
 		spell? ( >=app-text/gtkspell-2.0.2 )
 		eds? ( gnome-extra/evolution-data-server )
 		prediction? ( >=dev-db/sqlite-3.3:3 ) )
@@ -120,11 +119,11 @@ pkg_setup() {
 	if use gtk && ! use nls; then
 		ewarn "gtk build => nls is enabled!"
 	fi
-	if use dbus && ! use python; then
-		elog "dbus is enabled, no way to disable linkage with python => python is enabled"
-	fi
 	if use qq2010 && ! use qq; then
 		elog "enable qq2010 => qq is enabled!"
+	fi
+	if use dbus && ! use python; then
+		elog "dbus is enabled, no way to disable linkage with python => python is enabled"
 	fi
 	if use dbus || { use ncurses && use python; }; then
 		python_set_active_version 2
@@ -192,7 +191,6 @@ src_configure() {
 		$(use_enable gtk sm) \
 		$(use gtk || use_enable nls) \
 		$(use gtk && echo "--enable-nls") \
-		$(use gtk && use_enable startup-notification) \
 		$(use gtk && use_enable xscreensaver screensaver) \
 		$(use gtk && use_enable prediction cap) \
 		$(use gtk && use_enable eds gevolution) \
