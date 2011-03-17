@@ -1,4 +1,4 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -8,22 +8,19 @@ EAPI=3
 
 inherit toolchain-funcs eutils flag-o-matic multilib base ${VCS_ECLASS}
 
-# BUMP ME PLZ, NO COOKIES OTHERWISE
-[[ ${PV} != *9999* ]] && MPLAYER_REVISION="GIT-r32518-fe3c481"
-
 namesuf="${PN/mplayer/}"
 
 IUSE="3dnow 3dnowext +a52 aalib +alsa altivec aqua +ass bidi bindist bl bluray
-bs2b +cddb +cdio cdparanoia cpudetection custom-cpuopts custom-cflags debug dga +dirac
+bs2b +bzip2 +cddb +cdio cdparanoia cpudetection custom-cpuopts custom-cflags debug dga +dirac
 directfb doc +dts +dv dvb +dvd +dvdnav dxr3 +enca esd +faad fbcon
 ftp gif ggi gsm +iconv ipv6 jack joystick jpeg jpeg2k kernel_linux ladspa
-libcaca libmpeg2 lirc +live lzo mad md5sum +mmx mmxext mng +mp3 mpg123 nas
+libcaca lirc +live mad md5sum +mmx mmxext mng +mp3 mpg123 nas
 +network nut amr +opengl +osdmenu oss png pnm pulseaudio pvr +quicktime
 radio +rar +real +rtc rtmp samba +shm +schroedinger +hardcoded-tables sdl +speex sse sse2 ssse3
-tga +theora threads +tremor +truetype +unicode v4l v4l2 vdpau vidix
+tga +theora threads +truetype +unicode v4l v4l2 vdpau
 +vorbis vpx win32codecs +X xanim xinerama +xscreensaver +xv xvmc
-zoran"
-IUSE+=" +ffmpeg-mt -external-ffmpeg symlink"
+"
+IUSE+=" +ffmpeg-mt -system-ffmpeg symlink"
 
 VIDEO_CARDS="s3virge mga tdfx vesa"
 for x in ${VIDEO_CARDS}; do
@@ -40,14 +37,14 @@ if [[ ${PV} == *9999* ]]; then
 	EGIT_PROJECT="${PN}-build"
 	RELEASE_URI=""
 else
-	RELEASE_URI="http://rion-overlay.googlecode.com/files/${P}.tar.xz"
+	RELEASE_URI="mirror://gentoo/${P}.tar.xz"
 fi
 SRC_URI="${RELEASE_URI}
 	!truetype? ( ${FONT_URI} )
 "
 
 DESCRIPTION="Media Player for Linux, Uoti Urpala's fork"
-HOMEPAGE="http://www.mplayerhq.hu/"
+HOMEPAGE="http://www.mplayer2.org/"
 
 FONT_RDEPS="
 	virtual/ttf-fonts
@@ -62,7 +59,6 @@ X_RDEPS="
 #	nemesi? ( net-libs/libnemesi )
 RDEPEND+="
 	sys-libs/ncurses
-	app-arch/bzip2
 	sys-libs/zlib
 	!bindist? (
 		x86? (
@@ -77,7 +73,7 @@ RDEPEND+="
 			media-libs/libggiwmh
 		)
 		opengl? ( virtual/opengl )
-		vdpau? ( || ( x11-libs/libvdpau >=x11-drivers/nvidia-drivers-180.51 ) )
+		vdpau? ( x11-libs/libvdpau )
 		xinerama? ( x11-libs/libXinerama )
 		xscreensaver? ( x11-libs/libXScrnSaver )
 		xv? (
@@ -88,7 +84,7 @@ RDEPEND+="
 	a52? ( media-libs/a52dec )
 	aalib? ( media-libs/aalib )
 	alsa? ( media-libs/alsa-lib )
-	ass? ( ${FONT_RDEPS} >=media-libs/libass-0.9.10[enca?] )
+	ass? ( ${FONT_RDEPS} >=media-libs/libass-0.9.10[enca?,fontconfig] )
 	bidi? ( dev-libs/fribidi )
 	bluray? ( media-libs/libbluray )
 	bs2b? ( media-libs/libbs2b )
@@ -108,12 +104,11 @@ RDEPEND+="
 	gif? ( media-libs/giflib )
 	iconv? ( virtual/libiconv )
 	jack? ( media-sound/jack-audio-connection-kit )
-	jpeg? ( media-libs/jpeg )
+	jpeg? ( virtual/jpeg )
 	ladspa? ( media-libs/ladspa-sdk )
 	libcaca? ( media-libs/libcaca )
 	lirc? ( app-misc/lirc )
 	live? ( media-plugins/live )
-	lzo? ( >=dev-libs/lzo-2 )
 	mad? ( media-libs/libmad )
 	mng? ( media-libs/libmng )
 	mpg123? ( media-sound/mpg123 )
@@ -135,11 +130,12 @@ RDEPEND+="
 	truetype? ( ${FONT_RDEPS} )
 	vorbis? ( media-libs/libvorbis )
 	xanim? ( media-video/xanim )
-	external-ffmpeg? (
-		>=media-video/ffmpeg-0.6_p25423[amr?,dirac?,gsm?,hardcoded-tables?,jpeg2k?,rtmp?,schroedinger?,threads?,vpx?]
+	system-ffmpeg? (
+		>=media-video/ffmpeg-0.6_p25423[amr?,bzip2?,dirac?,gsm?,hardcoded-tables?,jpeg2k?,rtmp?,schroedinger?,threads?,vpx?]
 	)
-	!external-ffmpeg? (
+	!system-ffmpeg? (
 		amr? ( media-libs/opencore-amr )
+		bzip2? ( app-arch/bzip2 )
 		dirac? ( media-video/dirac )
 		gsm? ( >=media-sound/gsm-1.0.12-r1 )
 		jpeg2k? ( >=media-libs/openjpeg-1.3-r2 )
@@ -158,6 +154,7 @@ ASM_DEP="dev-lang/yasm"
 DEPEND="${RDEPEND}
 	dev-util/pkgconfig
 	dev-lang/python
+	sys-devel/gettext
 	X? (
 		${X_DEPS}
 		dga? ( x11-proto/xf86dgaproto )
@@ -223,8 +220,8 @@ pkg_setup() {
 		ewarn "3dnowext mmx mmxext sse sse2 ssse3) are properly set."
 	fi
 
-	if use ffmpeg-mt && use external-ffmpeg; then
-		ewarn "USE flags ffmpeg-mt and external-ffmpeg are not compatible, external-ffmpeg will be used."
+	if use ffmpeg-mt && use system-ffmpeg; then
+		ewarn "USE flags ffmpeg-mt and system-ffmpeg are not compatible, system-ffmpeg will be used."
 	fi
 }
 
@@ -238,7 +235,7 @@ src_unpack() {
 		git_fetch
 		S="${WORKDIR}/${P}"
 
-		if ! use external-ffmpeg; then
+		if ! use system-ffmpeg; then
 			if use ffmpeg-mt; then
 				EGIT_BRANCH="mt"
 				EGIT_COMMIT="mt"
@@ -280,24 +277,21 @@ src_prepare() {
 		# Set GIT version manually
 		pushd mplayer
 		echo "GIT-r$(git rev-list HEAD|wc -l)-$(git describe --always)" \
-			> VERSION || die "set vesrion failed"
+			> VERSION || die
 		popd
-
-		# remove internal libs and use system:
-		sed -e '/^mplayer: /s/libass//' -i Makefile || die "sed failed"
-		rm -rf \
-			libass \
-			mplayer/libfaad2 \
-			mplayer/libdvdcss \
-		|| die
-	else
-		# Set version #
-		echo "${MPLAYER_REVISION}" \
-			> mplayer/VERSION || die "set vesrion failed"
 	fi
 
-	if use external-ffmpeg; then
-		sed -e '/^mplayer: /s/ffmpeg//' -i Makefile || die "sed failed"
+	# remove internal libs and use system:
+	sed -e '/^mplayer: /s/libass//' \
+		-i Makefile || die
+	rm -rf \
+		libass \
+		|| die
+
+	if use system-ffmpeg; then
+		sed -e '/^mplayer: /s/ffmpeg//' \
+			-i Makefile || die
+		rm -rf ffmpeg ffmpeg-mt || die
 	else
 		if use ffmpeg-mt; then
 			touch ffmpeg-mt-enabled || die "enable-mt failed"
@@ -309,26 +303,26 @@ src_prepare() {
 			-e "/'--cpu=host',/d" \
 			-e "/'--disable-debug',/d" \
 			-e "/'--enable-pthreads',/d" \
-			script/ffmpeg-config || die "sed failed"
+			script/ffmpeg-config || die
 	fi
 
 	# fix path to bash executable in configure scripts
+	local bash_scripts="mplayer/configure mplayer/version.sh"
+	use system-ffmpeg || bash_scripts+=" ffmpeg*/configure ffmpeg*/version.sh"
 	sed -i -e "1c\#!${EPREFIX}/bin/bash" \
-		ffmpeg*/configure ffmpeg*/version.sh \
-		mplayer/configure mplayer/version.sh \
-		|| ewarn
+		${bash_scripts} || die
 
 	# We want mplayer${namesuf}
 	if [[ "${namesuf}" != "" ]]; then
 		pushd mplayer
 		sed -e "/elif linux ; then/a\  _exesuf=\"${namesuf}\"" \
-			-i configure || die "sed configure failed"
+			-i configure || die
 		sed -e "/ -m 644 DOCS\/man\/en\/mplayer/i\	mv DOCS\/man\/en\/mplayer.1 DOCS\/man\/en\/mplayer${namesuf}.1" \
 			-e "/ -m 644 DOCS\/man\/\$(lang)\/mplayer/i\	mv DOCS\/man\/\$(lang)\/mplayer.1 DOCS\/man\/\$(lang)\/mplayer${namesuf}.1" \
 			-e "s/er.1/er${namesuf}.1/g" \
-			-i Makefile || die "sed Makefile failed"
+			-i Makefile || die
 		sed -e "s/mplayer/mplayer${namesuf}/" \
-			-i TOOLS/midentify.sh || die "sed midentify failed"
+			-i TOOLS/midentify.sh || die
 		popd
 	fi
 
@@ -352,10 +346,12 @@ src_configure() {
 	###################
 	# disable svga since we don't want it
 	# disable arts since we don't have kde3
+	# disable tremor, it needs libvorbisidec and is for FPU-less systems only
 	myconf+="
-		--disable-svga --disable-svgalib_helper
+		--disable-svga
 		--disable-arts
 		--disable-kai
+		--disable-tremor
 		$(use_enable network networking)
 		$(use_enable joystick)
 	"
@@ -462,35 +458,24 @@ src_configure() {
 	##########
 	# Codecs #
 	##########
-	myconf+=" --disable-musepack" # Use internal musepack codecs for SV7 and SV8 support
-	myconf+=" --disable-faad-internal" # always use system media-libs/faad2
+	myconf+=" --disable-musepack" # deprecated, libavcodec Musepack decoder is preferred
 	use dts || myconf+=" --disable-libdca"
 	if ! use mp3; then
 		myconf+="
-			--disable-mp3lame
 			--disable-mp3lib
 		"
 	fi
-	uses="a52 bs2b dv lzo"
+	uses="a52 bs2b dv vorbis"
 	for i in ${uses}; do
 		use ${i} || myconf+=" --disable-lib${i}"
 	done
-	uses="faad gif jpeg libmpeg2 live mad mng mpg123 png pnm speex tga theora xanim"
+	uses="faad gif jpeg live mad mng mpg123 png pnm speex tga theora xanim"
 	for i in ${uses}; do
 		use ${i} || myconf+=" --disable-${i}"
 	done
-	if use vorbis || use tremor; then
-		use tremor || myconf+=" --disable-tremor-internal"
-		use vorbis || myconf+=" --disable-libvorbis"
-	else
-		myconf+="
-			--disable-tremor-internal
-			--disable-tremor
-			--disable-libvorbis
-		"
-	fi
+
 	# Encoding
-	uses="faac x264 xvid toolame twolame"
+	uses="xvid"
 	for i in ${uses}; do
 		myconf+=" --disable-${i}"
 	done
@@ -534,7 +519,6 @@ src_configure() {
 	use fbcon || myconf+=" --disable-fbdev"
 	use fbcon && use video_cards_s3virge && myconf+=" --enable-s3fb"
 	use libcaca || myconf+=" --disable-caca"
-	use zoran || myconf+=" --disable-zr"
 
 	if ! use kernel_linux || ! use video_cards_mga; then
 		 myconf+=" --disable-mga --disable-xmga"
@@ -596,14 +580,13 @@ src_configure() {
 	fi
 
 	is-flag -O? || append-flags -O2
-	if use x86 || use x86-fbsd; then
-		use debug || append-flags -fomit-frame-pointer
-	fi
 
 	# workaround bug, x86 just has too few registers, see c.f.
 	# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=402950#44
-	# and 32b osx, bug 329861
-	[[ ${CHOST} == i?86-*solaris* || ${CHOST} == i?86-*darwin* ]] && append-flags -fomit-frame-pointer
+	# and 32-bits OSX, bug 329861
+	if [[ ${CHOST} == i?86-* ]] ; then
+		use debug || append-flags -fomit-frame-pointer
+	fi
 
 	###########################
 	# X enabled configuration #
@@ -618,7 +601,6 @@ src_configure() {
 		use osdmenu && myconf+=" --enable-menu"
 		use vdpau || myconf+=" --disable-vdpau"
 		use video_cards_vesa || myconf+=" --disable-vesa"
-		use vidix || myconf+=" --disable-vidix --disable-vidix-pcidb"
 		use xscreensaver || myconf+=" --disable-xss"
 
 		if use xv; then
@@ -642,15 +624,13 @@ src_configure() {
 			--disable-ggi
 			--disable-gl
 			--disable-vdpau
-			--disable-vidix
-			--disable-vidix-pcidb
 			--disable-xinerama
 			--disable-xss
 			--disable-xv
 			--disable-xvmc
 			--disable-x11
 		"
-		uses="dga dxr3 ggi opengl osdmenu vdpau vidix xinerama xscreensaver xv"
+		uses="dga dxr3 ggi opengl osdmenu vdpau xinerama xscreensaver xv"
 		for i in ${uses}; do
 			use ${i} && elog "Useflag \"${i}\" require \"X\" useflag enabled to work."
 		done
@@ -672,15 +652,19 @@ src_configure() {
 	"
 	myconf+="
 		--prefix=${EPREFIX}/usr
+		--bindir=${EPREFIX}/usr/bin
+		--libdir=${EPREFIX}/usr/$(get_libdir)
 		--confdir=${EPREFIX}/etc/mplayer
 		--datadir=${EPREFIX}/usr/share/mplayer${namesuf}
-		--libdir=${EPREFIX}/usr/$(get_libdir)
+		--mandir=${EPREFIX}/usr/share/man
+		--localedir=${EPREFIX}/usr/share/locale
+		--enable-translation
 		"
 
 	echo "${common_options}" > common_options
 	echo "${myconf}" > mplayer_options
 
-	if ! use external-ffmpeg; then
+	if ! use system-ffmpeg; then
 		local ffconf="
 			--enable-gpl
 			--enable-version3
@@ -691,6 +675,7 @@ src_configure() {
 		# enabled by default
 		use debug || ffconf+=" --disable-debug"
 		use network || ffconf+=" --disable-network"
+		use bzip2 || ffconf+=" --disable-bzlib"
 
 		use custom-cflags && ffconf+=" --disable-optimizations"
 		use cpudetection && ffconf+=" --enable-runtime-cpudetect"
@@ -761,7 +746,7 @@ src_configure() {
 		-e 's/\t//g' \
 		-e 's/ --/\n--/g' \
 		-e '/^$/d' \
-		*_options || die "sed *_options failed"
+		*_options || die
 }
 
 src_compile() {
@@ -789,21 +774,17 @@ src_compile() {
 src_install() {
 	local i
 
-	emake prefix="${ED}/usr" \
-		BINDIR="${ED}/usr/bin" \
-		LIBDIR="${ED}/usr/$(get_libdir)" \
-		CONFDIR="${ED}/etc/mplayer" \
-		DATADIR="${ED}/usr/share/mplayer${namesuf}" \
-		MANDIR="${ED}/usr/share/man" \
+	emake \
+		DESTDIR="${D}" \
 		INSTALLSTRIP="" \
 		install || die "emake install failed"
 
 	S+="/mplayer"
 	cd "${S}"
-	dodoc AUTHORS Changelog Copyright README etc/codecs.conf || die
+	dodoc AUTHORS Copyright README etc/codecs.conf || die
 
 	docinto tech/
-	dodoc DOCS/tech/{*.txt,mpsub.sub,playtree,TODO,wishlist} || die
+	dodoc DOCS/tech/{*.txt,mpsub.sub,playtree} || die
 	docinto TOOLS/
 	dodoc TOOLS/* || die
 	if use real; then
@@ -812,8 +793,6 @@ src_install() {
 		docinto TOOLS/realcodecs/
 		dodoc TOOLS/realcodecs/* || die
 	fi
-	docinto tech/mirrors/
-	dodoc DOCS/tech/mirrors/* || die
 
 	if use doc; then
 		docinto html/
@@ -866,18 +845,9 @@ _EOF_
 	fi
 }
 
-pkg_preinst() {
-	[[ -d ${EROOT}/usr/share/mplayer${namesuf}/Skin/default ]] && \
-		rm -rf "${EROOT}/usr/share/mplayer${namesuf}/Skin/default"
-}
-
 pkg_postrm() {
 	# Cleanup stale symlinks
 	[ -L "${EROOT}/usr/share/mplayer${namesuf}/font" -a \
 			! -e "${EROOT}/usr/share/mplayer${namesuf}/font" ] && \
 		rm -f "${EROOT}/usr/share/mplayer${namesuf}/font"
-
-	[ -L "${EROOT}/usr/share/mplayer${namesuf}/subfont.ttf" -a \
-			! -e "${EROOT}/usr/share/mplayer${namesuf}/subfont.ttf" ] && \
-		rm -f "${EROOT}/usr/share/mplayer${namesuf}/subfont.ttf"
 }
