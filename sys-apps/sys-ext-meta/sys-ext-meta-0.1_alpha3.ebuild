@@ -24,7 +24,7 @@ DEPEND="
 	net-fs/autofs
 	net-fs/nfs-utils
 	sys-apps/hdparm
-	sys-block/compcache-tools
+	sys-power/acpid
 	sys-power/hibernate-script"
 RDEPEND=""
 PDEPEND=""
