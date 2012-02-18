@@ -17,16 +17,15 @@ IUSE=""
 
 S=${WORKDIR}
 
-DEPEND="
-	app-admin/sudo
-	app-editors/vim[bash-completion]
+RDEPEND="
+	app-editors/vim
 	media-sound/alsa-utils
 	net-fs/autofs
 	net-fs/nfs-utils
 	sys-apps/hdparm
 	sys-power/acpid
-	sys-power/hibernate-script"
-RDEPEND=""
+	sys-power/pm-utils"
+DEPEND=""
 PDEPEND=""
 
 pkg_postinst() {
