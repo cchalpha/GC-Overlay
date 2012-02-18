@@ -19,7 +19,6 @@ S=${WORKDIR}
 
 RDEPEND="
 	media-fonts/dejavu[X=]
-	
 	media-fonts/wqy-bitmapfont[X=]
 	media-fonts/wqy-microhei[X=]
 	media-fonts/wqy-zenhei[X=]"
