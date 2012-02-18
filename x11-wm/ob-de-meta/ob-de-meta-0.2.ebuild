@@ -17,7 +17,7 @@ IUSE=""
 
 S=${WORKDIR}
 
-DEPEND="
+RDEPEND="
 	app-i18n/xsunpinyin
 	media-gfx/feh
 	x11-libs/gksu
@@ -27,7 +27,7 @@ DEPEND="
 	x11-themes/vanilla-dmz-xcursors
 	x11-wm/openbox
 	x11-terms/rxvt-unicode"
-RDEPEND=""
+DEPEND=""
 PDEPEND=""
 
 pkg_postinst() {
