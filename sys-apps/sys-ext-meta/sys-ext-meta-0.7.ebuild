@@ -11,20 +11,31 @@ SLOT="0"
 
 # when unmasking for an arch
 # double check none of the deps are still masked !
-KEYWORDS="alpha amd64 ia64 ppc ppc64 sparc x86"
+KEYWORDS="amd64 x86 arm"
 
 IUSE=""
 
 S=${WORKDIR}
 
 RDEPEND="
+	sys-firmware/intel-microcode
 	app-editors/vim
+	app-misc/tmux
 	media-sound/alsa-utils
 	net-fs/autofs
+	net-fs/cifs-utils
 	net-fs/nfs-utils
 	sys-apps/hdparm
+	sys-fs/btrfs-progs
+	sys-fs/dosfstools
 	sys-power/acpid
-	sys-power/pm-utils"
+	sys-power/pm-utils
+	sys-process/dcron
+	sys-process/htop
+	sys-process/schedtool
+	app-arch/lbzip2[symlink]
+	app-arch/lz4
+	app-arch/zstd"
 DEPEND=""
 PDEPEND=""
 
